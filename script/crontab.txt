@@ -1,0 +1,2 @@
+#********************ES Search Service***************************************
+*/1 * * * * sh /data/mysqltoes/mysqltoes-1.0/bin/monitor.sh >> /data/mysqltoes/mysqltoes-1.0/log/monitor.log 2>&1 &

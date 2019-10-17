@@ -40,9 +40,11 @@ public class ElasticSearchClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchClient.class);
 
-    private static final int DEFAULT_PORT = 9300;
+    private static final int DEFAULT_PORT = 9200;
     private String clusterName;
     private String clusterNodes;
+    private Integer maxRetryTimeoutMillis;
+
 
     @Bean(name = "client",destroyMethod="close") // //这个close是调用RestHighLevelClient中的close
     @Scope("singleton")
@@ -127,16 +129,13 @@ public class ElasticSearchClient {
             /*4.设置修改默认请求配置的回调（例如：请求超时，认证，或者其他
             设置）。*/
             restClientBuilder.setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback() {
-
                 @Override
                 public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
-                    return requestConfigBuilder.setSocketTimeout(10000);
+                    return requestConfigBuilder.setSocketTimeout(maxRetryTimeoutMillis);
                 }
             });
 
             /*5.//设置修改 http 客户端配置的回调（例如：ssl 加密通讯，线程IO的配置，或其他任何         设置）*/
-
-
             // 简单的身份认证
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY,
@@ -173,5 +172,13 @@ public class ElasticSearchClient {
 
     public void setClusterNodes(String clusterNodes) {
         this.clusterNodes = clusterNodes;
+    }
+
+    public Integer getMaxRetryTimeoutMillis() {
+        return maxRetryTimeoutMillis;
+    }
+
+    public void setMaxRetryTimeoutMillis(Integer maxRetryTimeoutMillis) {
+        this.maxRetryTimeoutMillis = maxRetryTimeoutMillis;
     }
 }

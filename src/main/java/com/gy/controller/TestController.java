@@ -54,9 +54,9 @@ public class TestController {
     @GetMapping(value = "/cluster_update_setting")
     public boolean clusterUpdateSetting() throws Exception {
 
-        Map<String,Object> transientSettingMap = new HashMap<>();
-        transientSettingMap.put("indices.recovery.max_bytes_per_sec", "40m");
-        boolean clusterUpdateSetting = clusterApis.clusterUpdateSetting(transientSettingMap,null);
+        Map<String,Object> persistentSettingMap = new HashMap<>();
+        persistentSettingMap.put("search.max_buckets", "1000000");
+        boolean clusterUpdateSetting = clusterApis.clusterUpdateSetting(null,persistentSettingMap);
         return clusterUpdateSetting;
     }
 

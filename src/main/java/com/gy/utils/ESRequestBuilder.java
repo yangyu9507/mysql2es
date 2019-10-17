@@ -68,6 +68,7 @@ public class ESRequestBuilder {
         private Set<String> names = Sets.newConcurrentHashSet();
         private List<AggregationBuilder> aggregationBuilders = Collections.synchronizedList(Lists.newArrayList());
         private TimeValue keepAlive;
+        private Long timeOut;
         private Object[] afterValues;
 
         private ThreadLocal<SearchRequest> requestBuilderThreadLocal = ThreadLocal.withInitial(SearchRequest::new);
@@ -129,6 +130,15 @@ public class ESRequestBuilder {
             return this;
         }
 
+        public Builder setTimeOut(Long timeOut){
+            if (Objects.nonNull(timeOut)){
+                this.timeOut = timeOut;
+            } else {
+                this.timeOut = 10L;
+            }
+            return this;
+        }
+
         public Builder setAfterValues(Object[] afterValues) {
             if (null != afterValues) {
                 this.afterValues = afterValues;
@@ -143,6 +153,8 @@ public class ESRequestBuilder {
 
             SearchRequest requestBuilder = requestBuilderThreadLocal.get();
             SearchSourceBuilder searchSourceBuilder = searchSourceBuilderThreadLocal.get();
+
+            searchSourceBuilder.timeout(TimeValue.timeValueSeconds(60));
 
             requestBuilder.source(searchSourceBuilder);
 
@@ -178,6 +190,10 @@ public class ESRequestBuilder {
                 requestBuilder.scroll(keepAlive);
             }
 
+            if (Objects.nonNull(timeOut)) {
+                searchSourceBuilder.timeout(TimeValue.timeValueSeconds(timeOut));
+            }
+
             if (Objects.nonNull(afterValues) && afterValues.length > 0) {
                 searchSourceBuilder.searchAfter(afterValues);
             }
@@ -185,6 +201,7 @@ public class ESRequestBuilder {
             if (Objects.isNull(afterValues)){
                 searchSourceBuilder.searchAfter();
             }
+
 
             requestBuilder.indicesOptions(IndicesOptions.fromOptions(
                     true, true, true,

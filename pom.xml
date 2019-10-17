@@ -23,6 +23,7 @@
         <esclientrhl.version>7.0.0</esclientrhl.version>
         <druid.version>1.1.20</druid.version>
         <commons-io.version>2.6</commons-io.version>
+        <lombok.version>1.18.10</lombok.version>
 
         <lib-common.version>2.0.46-perf</lib-common.version>
     </properties>
@@ -79,14 +80,6 @@
             <artifactId>esclientrhl</artifactId>
             <version>${esclientrhl.version}</version>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.zxp</groupId>
-            <artifactId>esclientrhl-springboot-starter</artifactId>
-            <version>${esclientrhl.version}</version>
-        </dependency>-->
-
-
 
         <dependency>
             <groupId>mysql</groupId>
@@ -152,6 +145,13 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

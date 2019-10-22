@@ -1,6 +1,7 @@
 package com.gy.utils.esapi;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.gy.enums.StatsEnum;
 import com.gy.model.FieldSort;
 import gy.lib.common.util.NumberUtil;
@@ -33,40 +34,43 @@ public class AggApis {
     private static final String Execution_Hint_Map = "map";
 
     public TermsAggregationBuilder termsAggBuilder(String alias, String field,Integer size
-                                                  ,Boolean orderKey,Boolean orderCount) {
+                                                  ,Boolean orderKey,Boolean orderCount,boolean isDefault) {
         Preconditions.checkArgument(StringUtils.isNotBlank(alias),"alias must not be empty. ");
         Preconditions.checkArgument(StringUtils.isNotBlank(field),"field must not be empty. ");
 
 
         TermsAggregationBuilder termsAgg = AggregationBuilders.terms(alias).field(field);
 
-        return termsBuilder(termsAgg,size,orderKey,orderCount);
+        return termsBuilder(termsAgg,size,orderKey,orderCount,isDefault);
     }
 
     private static final String splits = " + ' ***** ' + ";
+//    private static final String multiMultiFormat = "doc['%s'].value";
     private static final String multiMultiFormat = "String.valueOf(doc['%s'].empty ? '': String.valueOf(doc['%s'].value))";
 
     public TermsAggregationBuilder multiFieldTermsAggBuilder(String alias, String[] field,Integer size
-                                                            ,Boolean orderKey,Boolean orderCount) {
+                                                            ,Boolean orderKey,Boolean orderCount,boolean isDefault) {
 
         Preconditions.checkArgument(StringUtils.isNotBlank(alias),"alias must not be empty. ");
         Preconditions.checkArgument(Objects.nonNull(field) && field.length > 1,"field.length must be lagger than 1, otherwise use single filed agg [termsAgg].");
 
         StringBuilder scriptStr = new StringBuilder();
         scriptStr.append(String.format(multiMultiFormat,field[0],field[0]));
+//        scriptStr.append(String.format(multiMultiFormat,field[0]));
         for (int i = 1,len = field.length; i < len ; i++) {
             scriptStr.append(splits);
             scriptStr.append(String.format(multiMultiFormat,field[i],field[i]));
+//            scriptStr.append(String.format(multiMultiFormat,field[i]));
         }
 
         Script script = new Script(scriptStr.toString());
         TermsAggregationBuilder termsAgg = AggregationBuilders.terms(alias).script(script);
 
-        return termsBuilder(termsAgg, size, orderKey, orderCount);
+        return termsBuilder(termsAgg, size, orderKey, orderCount,isDefault);
     }
 
 
-    private TermsAggregationBuilder termsBuilder(TermsAggregationBuilder termsAgg,Integer size,Boolean orderKey,Boolean orderCount){
+    private TermsAggregationBuilder termsBuilder(TermsAggregationBuilder termsAgg,Integer size,Boolean orderKey,Boolean orderCount,boolean isDefault){
 
         if (Objects.isNull(size)){
             size = 10;
@@ -82,12 +86,14 @@ public class AggApis {
         // 默认深度优先聚合,改为 广度优先
         termsAgg.collectMode(Aggregator.SubAggCollectionMode.BREADTH_FIRST);
         // 默认方式
-        termsAgg.executionHint(Execution_Hint_Global_Ordinals);
+        termsAgg.executionHint(isDefault ? Execution_Hint_Global_Ordinals : Execution_Hint_Map);
 
+        List<BucketOrder> bucketOrders = Lists.newArrayList();
         // 默认 "_count": "desc"  以terms数量倒序
-        termsAgg.order(BucketOrder.count(Objects.nonNull(orderCount) ? orderCount: false));
+        bucketOrders.add(BucketOrder.count(Objects.nonNull(orderCount) ? orderCount: false));
         // 默认  "_key": "asc"    以terms的key的字典顺序 正序
-        termsAgg.order(BucketOrder.key(Objects.nonNull(orderKey)? orderKey : true));
+        bucketOrders.add(BucketOrder.key(Objects.nonNull(orderKey)? orderKey : true));
+        termsAgg.order(bucketOrders);
 
         termsAgg.minDocCount(Min_Doc_Count);
         termsAgg.shardMinDocCount(Shard_Min_Doc_Count);
@@ -208,7 +214,6 @@ public class AggApis {
     /**
      * <p>统计聚合|类似group by</p>
      * @param aggAlias          聚合别名
-     * @param groupByField      groupBy字段
      * @param fetchFields       需要取的字段
      * @param excludeFields     需要排除的字段
      * @param sortList          排序字段
@@ -216,13 +221,11 @@ public class AggApis {
      * @param size              取值数量
      * @Return                  统计聚合对象
      */
-    public TopHitsAggregationBuilder groupByAggBuilder(String aggAlias, String groupByField, String[] fetchFields,String[] excludeFields,
+    public TopHitsAggregationBuilder groupByAggBuilder(String aggAlias, String[] fetchFields,String[] excludeFields,
                                   List<FieldSort> sortList,Integer from,Integer size) {
         Preconditions.checkArgument(Objects.nonNull(aggAlias),"aggAlias must not be empty. ");
-        Preconditions.checkArgument(StringUtils.isNotBlank(groupByField),"groupByField must not be empty. ");
 
         TopHitsAggregationBuilder topHitsAgg = AggregationBuilders.topHits(aggAlias)
-                .docValueField(groupByField)
                 .fetchSource(Objects.nonNull(fetchFields))
                 .fetchSource(fetchFields, excludeFields);
 

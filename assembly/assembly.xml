@@ -18,6 +18,7 @@
                 <include>elastic.properties</include>
                 <include>logback-spring.xml</include>
                 <include>mysql.properties</include>
+                <include>mybatis-config.xml</include>
                 <include>sql/item.sql</include>
             </includes>
             <filtered>true</filtered>

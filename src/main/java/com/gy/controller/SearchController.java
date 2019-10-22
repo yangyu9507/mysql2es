@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.gy.utils.ESRequestBuilder;
 import com.gy.utils.EsHelper;
 import com.gy.utils.IndexUtils;
+import com.gy.utils.esapi.SearchApis;
 import gy.lib.common.util.JsonUtil;
 import gy.lib.common.util.NumberUtil;
 import org.apache.lucene.search.join.ScoreMode;
@@ -25,6 +26,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -38,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.alibaba.fastjson.serializer.SerializerFeature.WriteBigDecimalAsPlain;
@@ -59,9 +62,48 @@ public class SearchController {
     private IndexUtils indexUtils;
     @Autowired
     private EsHelper esHelper;
+    @Autowired
+    private SearchApis searchApis;
 
     private static final long limit = 10000L;
+    private static final String index = "item_v2";
 
+    @PostMapping(value = "/wild", produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public void wildSearch(@RequestBody Map<String,Object> paramsMap) throws Exception{
+
+        BoolQueryBuilder query = boolQuery();
+//        query.filter(fuzzyQuery("code",paramsMap.get("code")));
+
+//        query.filter(wildcardQuery("code","*" + String.valueOf(paramsMap.get("code")) + "*"));
+
+//        query.filter(regexpQuery("code","*" + String.valueOf(paramsMap.get("code")) + "*"));
+
+//        query.filter(prefixQuery("code",String.valueOf(paramsMap.get("code"))));
+
+//        query.filter(matchPhraseQuery("code",String.valueOf(paramsMap.get("code"))));
+
+        QueryStringQueryBuilder codeQuery
+                = queryStringQuery(String.valueOf(paramsMap.get("code")))
+                                  .field("code")
+                           .allowLeadingWildcard(true)
+                           .analyzeWildcard(true)
+                           .minimumShouldMatch("50%");
+        query.filter(codeQuery);
+
+        SearchRequest request = ESRequestBuilder.builder()
+                 .setIndex(index)
+                 .setQuery(query)
+                 .build();
+
+        long count = searchApis.count(query, index);
+        System.out.println("count : " + count);
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+        SearchHit[] hits = response.getHits().getHits();
+        Arrays.stream(hits).map(JSONObject::toJSONString).forEach(System.out::println);
+
+    }
 
     public ESRequestBuilder.Builder getBuilder (BoolQueryBuilder query){
         ESRequestBuilder.Builder commonBuilder = ESRequestBuilder.builder()

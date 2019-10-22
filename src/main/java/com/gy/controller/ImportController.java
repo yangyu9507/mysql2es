@@ -11,6 +11,7 @@ import com.gy.utils.IndexUtils;
 import gy.lib.common.util.FinanceUtil;
 import gy.lib.common.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
@@ -21,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,7 +53,6 @@ public class ImportController {
     @ResponseBody
     public void importBySql(@RequestBody Map<String,Object> map) throws Exception{
 
-
         BulkProcessor bulkProcessor = BulkProcessorUtils.getInstance(client);
 
         List<ImportTaskEntity> taskEntityList = JSONArray.parseArray(JSONObject.toJSONString(map.get("taskEntity")), ImportTaskEntity.class);
@@ -69,13 +71,13 @@ public class ImportController {
                     String sql = FileUtils.readSqlFromFile(taskEntity.getSqlPath());
                     taskEntity.setSql(sql);
                 }
-                logger.info("Import Mysql [{}] to ES [index:{},type:{}] with Sql[{}{}{}{}{}{}] start! ",
-                        taskEntity.getDbName(), taskEntity.getIndex(), taskEntity.getType(), System.lineSeparator(),lineStart,System.lineSeparator(),taskEntity.getSql(),lineEnd,System.lineSeparator());
+                logger.info("Import Mysql [{}] to ES [{}] with Sql[{}{}{}{}{}{}] start! ",
+                        taskEntity.getDbName(), taskEntity.getIndex(),  System.lineSeparator(),lineStart,System.lineSeparator(),taskEntity.getSql(),lineEnd,System.lineSeparator());
                 long start = System.currentTimeMillis();
                 bulkProcessDemo.writeMysqlDataToES(taskEntity,bulkProcessor,conn);
-                String executeTime = getExecuteTime(start);  ;
-                logger.info("Import Mysql [{}] to ES [index:{},type:{}] with Sql[{}{}{}{}{}{}] finished, executeTime:{}",
-                        taskEntity.getDbName(), taskEntity.getIndex(), taskEntity.getType(), System.lineSeparator(),lineStart,System.lineSeparator(),taskEntity.getSql(),lineEnd,System.lineSeparator(),executeTime);
+                String executeTime = getExecuteTime(start);
+                logger.info("Import Mysql [{}] to ES [index:{}] with Sql[{}{}{}{}{}{}] finished, executeTime:{}",
+                        taskEntity.getDbName(), taskEntity.getIndex(), System.lineSeparator(),lineStart,System.lineSeparator(),taskEntity.getSql(),lineEnd,System.lineSeparator(),executeTime);
             }
             closeConnection(conn);
         }
@@ -85,14 +87,8 @@ public class ImportController {
     private static final String lineStart = "************************************************ SQL Start **************************************************";
     private static final String lineEnd   = "************************************************ SQL  End  **************************************************";
 
-    private Connection getCurrentConnection(String dbName){
-        Connection conn = null;
-        try{
-            conn = DBHelper.getConnection(dbName);
-        }catch (SQLException ex){
-            logger.error("Getting DB[{}] Connection Failed: ",ex);
-        }
-        return conn;
+    private Connection getCurrentConnection(String dbName) throws Exception{
+      return DBHelper.getConnection(dbName);
     }
 
     private void closeConnection(Connection conn){
@@ -123,9 +119,11 @@ public class ImportController {
      */
     private String getExecuteTime(long start){
         Double totalTime = FinanceUtil.divide(NumberUtil.toDouble(System.currentTimeMillis() - start), NumberUtil.toDouble(1000));
+        int hour  = NumberUtil.toInt(Math.floor(totalTime / 3600));
+        totalTime %= 3600;
         int min  = NumberUtil.toInt(Math.floor(totalTime / 60));
         String sec  = String.format("%.3f",totalTime % 60);
-        return String.format("%dm %ss",min,sec);
+        return String.format("%dh %dm %ss",hour,min,sec);
     }
 
 }

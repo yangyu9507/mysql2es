@@ -10,7 +10,6 @@ public class ImportTaskEntity {
     private String sql;
     private String sqlPath;
     private String index;
-    private String type;
     private Boolean removeEmpty;
     private String primaryKey;
     private String aliasPrefix;
@@ -53,14 +52,6 @@ public class ImportTaskEntity {
 
     public void setIndex(String index) {
         this.index = index;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public Boolean getRemoveEmpty() {

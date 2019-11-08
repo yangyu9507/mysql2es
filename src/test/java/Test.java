@@ -3,10 +3,31 @@ import gy.lib.common.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * created by yangyu on 2019-09-19
  */
+
+class Num{
+    public Num(int a) {
+        this.a = a;
+    }
+
+    int a;
+
+
+    public int getA() {
+        return a;
+    }
+
+    public void setA(int a) {
+        this.a = a;
+    }
+}
+
 public class Test {
 
     public static void main(String...args) throws Exception{
@@ -17,9 +38,32 @@ public class Test {
         String sec  = String.format("%.3f",totalTime % 60);
         System.out.println(String.format("%dm %ss",min,sec));*/
 
-        String ab=String.format("%.2f",1.23);
-        System.out.println(ab);
+
+       // String ab=String.format("%.2f",1.23);
+        //System.out.println(ab);
+        /*boolean at=false ;
+        boolean ab= true ;
+        System.out.println("assert ="+!(at && ab));
+        System.out.println("assert ="+!(at || ab));*/
+
     }
+
+    private static AtomicBoolean isCreated = new AtomicBoolean(false);
+
+    @org.testng.annotations.Test
+    public void tttt() {
+
+        if (!isCreated.get()){
+            System.out.println("create .. ");
+            isCreated.set(true);
+        }
+        System.out.println(isCreated.get());
+
+    }
+
+
+
+
 
     @org.testng.annotations.Test
     public void test2() {

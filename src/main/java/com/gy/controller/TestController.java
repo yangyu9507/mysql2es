@@ -55,7 +55,8 @@ public class TestController {
     public boolean clusterUpdateSetting() throws Exception {
 
         Map<String,Object> persistentSettingMap = new HashMap<>();
-        persistentSettingMap.put("search.max_buckets", "1000000");
+//        persistentSettingMap.put("search.max_buckets", "1000000");
+        persistentSettingMap.put("index.max_inner_result_window", "1000000");
         boolean clusterUpdateSetting = clusterApis.clusterUpdateSetting(null,persistentSettingMap);
         return clusterUpdateSetting;
     }

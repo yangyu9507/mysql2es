@@ -45,8 +45,8 @@ public class AggApis {
     }
 
     private static final String splits = " + ' ***** ' + ";
-//    private static final String multiMultiFormat = "doc['%s'].value";
-    private static final String multiMultiFormat = "String.valueOf(doc['%s'].empty ? '': String.valueOf(doc['%s'].value))";
+    private static final String multiMultiFormat = "doc['%s'].value";
+//    private static final String multiMultiFormat = "String.valueOf(doc['%s'].empty ? '': String.valueOf(doc['%s'].value))";
 
     public TermsAggregationBuilder multiFieldTermsAggBuilder(String alias, String[] field,Integer size
                                                             ,Boolean orderKey,Boolean orderCount,boolean isDefault) {
@@ -55,12 +55,12 @@ public class AggApis {
         Preconditions.checkArgument(Objects.nonNull(field) && field.length > 1,"field.length must be lagger than 1, otherwise use single filed agg [termsAgg].");
 
         StringBuilder scriptStr = new StringBuilder();
-        scriptStr.append(String.format(multiMultiFormat,field[0],field[0]));
-//        scriptStr.append(String.format(multiMultiFormat,field[0]));
+//        scriptStr.append(String.format(multiMultiFormat,field[0],field[0]));
+        scriptStr.append(String.format(multiMultiFormat,field[0]));
         for (int i = 1,len = field.length; i < len ; i++) {
             scriptStr.append(splits);
-            scriptStr.append(String.format(multiMultiFormat,field[i],field[i]));
-//            scriptStr.append(String.format(multiMultiFormat,field[i]));
+//            scriptStr.append(String.format(multiMultiFormat,field[i],field[i]));
+            scriptStr.append(String.format(multiMultiFormat,field[i]));
         }
 
         Script script = new Script(scriptStr.toString());

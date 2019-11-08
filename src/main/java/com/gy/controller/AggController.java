@@ -1,6 +1,5 @@
 package com.gy.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.gy.enums.StatsEnum;
 import com.gy.model.FieldSort;
@@ -13,30 +12,17 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.script.BucketAggregationScript;
-import org.elasticsearch.script.BucketAggregationSelectorScript;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.*;
-import org.elasticsearch.search.aggregations.pipeline.BucketScriptPipelineAggregationBuilder;
-import org.elasticsearch.search.aggregations.pipeline.BucketSelectorPipelineAggregationBuilder;
-import org.elasticsearch.search.aggregations.pipeline.BucketSelectorPipelineAggregator;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.standard.Fidelity;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.LongStream;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -47,7 +33,6 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 @RequestMapping(value = "/agg")
 @Slf4j
 public class AggController {
-
 
     private static final String index = "orderdetail";
 
